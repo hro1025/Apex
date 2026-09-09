@@ -1,10 +1,15 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
 from palette import CATPPUCCIN_MOCHA
 
 
 class Sidebar(QWidget):
+    navigate_dashboard = Signal()
+    navigate_transaction = Signal()
+    navigate_accounts = Signal()
+    navigate_settings = Signal()
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setFixedWidth(200)
@@ -15,6 +20,11 @@ class Sidebar(QWidget):
         transaction_button: QPushButton = QPushButton("Transaction")
         accounts_button: QPushButton = QPushButton("Accounts")
         settings_button: QPushButton = QPushButton("Settings")
+
+        dashboard_button.clicked.connect(self.navigate_dashboard.emit)
+        transaction_button.clicked.connect(self.navigate_transaction.emit)
+        accounts_button.clicked.connect(self.navigate_accounts.emit)
+        settings_button.clicked.connect(self.navigate_settings.emit)
 
         layout: QVBoxLayout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
