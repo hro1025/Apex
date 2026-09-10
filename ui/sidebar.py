@@ -34,7 +34,7 @@ class Sidebar(QWidget):
         layout.addWidget(transaction_button)
         layout.addWidget(accounts_button)
 
-        layout.addStretch()  # pushes everything after this to the bottom
+        layout.addStretch()
 
         layout.addWidget(settings_button)
 
@@ -51,7 +51,7 @@ class Sidebar(QWidget):
                 border-radius: 10px;
                 text-align: left;
                 padding: 8px 12px;
-                font-size: 16px;
+                font-size: 14px;
             }}
             QPushButton:hover {{
                 background-color: {CATPPUCCIN_MOCHA["header_active"]};
