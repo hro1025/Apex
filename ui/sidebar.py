@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
-from palette import CATPPUCCIN_MOCHA
+from resources.palette import CATPPUCCIN_MOCHA
 
 
 class Sidebar(QWidget):

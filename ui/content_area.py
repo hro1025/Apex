@@ -1,11 +1,11 @@
 from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QStackedWidget, QVBoxLayout, QWidget
 
-from account_page import AccountPage
-from dashboard_page import DashboardPage
-from palette import CATPPUCCIN_MOCHA
-from settings_page import SettingsPage
-from transaction_page import TransactionPage
+from pages.account_page import AccountPage
+from pages.dashboard_page import DashboardPage
+from pages.settings_page import SettingsPage
+from pages.transaction_page import TransactionPage
+from resources.palette import CATPPUCCIN_MOCHA
 
 
 class ContentArea(QWidget):

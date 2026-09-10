@@ -2,9 +2,9 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QWidget
 
-from content_area import ContentArea
-from palette import build_qpalette
-from sidebar import Sidebar
+from resources.palette import build_qpalette
+from ui.content_area import ContentArea
+from ui.sidebar import Sidebar
 
 app: QApplication = QApplication(sys.argv)
 app.setPalette(build_qpalette())
