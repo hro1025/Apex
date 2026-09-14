@@ -1,4 +1,3 @@
-from PySide6.QtGui import Qt
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -6,11 +5,14 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
 
 from resources.palette import CATPPUCCIN_MOCHA
+from services.account_service import create_account, get_all_accounts
+from ui.add_account_dialog import AddAccountDialog
 
 
 class AccountPage(QWidget):
@@ -32,6 +34,7 @@ class AccountPage(QWidget):
 
         add_account_button: QPushButton = QPushButton("Add account")
         add_account_button.setObjectName("add_account_button")
+        add_account_button.clicked.connect(self.open_add_account_dialog)
 
         columns_row: QHBoxLayout = QHBoxLayout()
         columns_row.addWidget(name_label, 1)
@@ -40,10 +43,12 @@ class AccountPage(QWidget):
         columns_row.addStretch()
         columns_row.addWidget(add_account_button)
 
-        separator: QWidget = QWidget()
-        separator.setFixedHeight(2)
-        separator.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        separator.setStyleSheet(f"background-color: {CATPPUCCIN_MOCHA['border']};")
+        separator: QFrame = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Plain)
+        separator.setStyleSheet(
+            f"background-color: {CATPPUCCIN_MOCHA['border']}; max-height: 2px;"
+        )
 
         accounts_table: QTableWidget = QTableWidget()
         accounts_table.setColumnCount(3)
@@ -54,6 +59,13 @@ class AccountPage(QWidget):
         accounts_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
+
+        accounts = get_all_accounts()
+        accounts_table.setRowCount(len(accounts))
+        for row, account in enumerate(accounts):
+            accounts_table.setItem(row, 0, QTableWidgetItem(account.name))
+            accounts_table.setItem(row, 1, QTableWidgetItem(account.category))
+            accounts_table.setItem(row, 2, QTableWidgetItem(f"{account.balance:.2f}"))
 
         layout: QVBoxLayout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -80,3 +92,12 @@ class AccountPage(QWidget):
                 background-color: {CATPPUCCIN_MOCHA["border_light"]};
             }}
         """)
+
+    def open_add_account_dialog(self) -> None:
+        dialog = AddAccountDialog(self)
+        if dialog.exec() == AddAccountDialog.DialogCode.Accepted:
+            create_account(
+                name=dialog.name_input.text(),
+                category=dialog.category_input.text(),
+                balance=float(dialog.balance_input.text() or 0),
+            )
