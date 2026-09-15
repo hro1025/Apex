@@ -1,31 +1,43 @@
+from PySide6.QtCore import QSettings
 from PySide6.QtGui import QColor, QPalette
 
-CATPPUCCIN_MOCHA = {
-    "background": "#1e1e2e",  # Base
-    "background_dark": "#181825",  # Mantle — one step darker than background
-    "header": "#313244",  # Surface0 — panel/sidebar background
-    "header_hover": "#45475a",  # Surface1 — hover state for panel items
-    "header_active": "#585b70",  # Surface2 — pressed/active state, one step past hover
-    "border": "#45475a",  # Surface1
-    "border_light": "#6c7086",  # Overlay0 — a lighter border for emphasis
-    "text": "#cdd6f4",  # Text
-    "muted": "#7f849c",  # Overlay1
-    "accent": "#cba6f7",  # Mauve
-    "accent_hover": "#f5c2e7",  # Pink — a nearby hue Catppuccin pairs with mauve for hover
+from resources.themes.catppuccin_mocha import CATPPUCCIN_MOCHA
+from resources.themes.dracula import DRACULA
+from resources.themes.gruvbox_dark import GRUVBOX_DARK
+from resources.themes.nord import NORD
+from resources.themes.solarized_light import SOLARIZED_LIGHT
+
+THEMES: dict[str, dict[str, str]] = {
+    "Catppuccin Mocha": CATPPUCCIN_MOCHA,
+    "Dracula": DRACULA,
+    "Nord": NORD,
+    "Solarized Light": SOLARIZED_LIGHT,
+    "Gruvbox Dark": GRUVBOX_DARK,
 }
 
 
-def build_qpalette() -> QPalette:
+def get_theme_name() -> str:
+    settings = QSettings("Apex", "ApexFinance")
+    return str(settings.value("theme_name", "catppuccin_mocha"))
+
+
+def set_theme_name(name: str) -> None:
+    settings = QSettings("Apex", "ApexFinance")
+    settings.setValue("theme_name", name)
+
+
+THEME: dict[str, str] = THEMES.get(get_theme_name(), CATPPUCCIN_MOCHA)
+
+
+def build_qpalette(theme: dict[str, str]) -> QPalette:
     p: QPalette = QPalette()
-    p.setColor(QPalette.ColorRole.Window, QColor(CATPPUCCIN_MOCHA["background"]))
-    p.setColor(QPalette.ColorRole.Base, QColor(CATPPUCCIN_MOCHA["header"]))
-    p.setColor(QPalette.ColorRole.WindowText, QColor(CATPPUCCIN_MOCHA["text"]))
-    p.setColor(QPalette.ColorRole.Text, QColor(CATPPUCCIN_MOCHA["text"]))
-    p.setColor(QPalette.ColorRole.Button, QColor(CATPPUCCIN_MOCHA["header"]))
-    p.setColor(QPalette.ColorRole.ButtonText, QColor(CATPPUCCIN_MOCHA["text"]))
-    p.setColor(QPalette.ColorRole.Highlight, QColor(CATPPUCCIN_MOCHA["accent"]))
-    p.setColor(
-        QPalette.ColorRole.HighlightedText, QColor(CATPPUCCIN_MOCHA["background"])
-    )
-    p.setColor(QPalette.ColorRole.PlaceholderText, QColor(CATPPUCCIN_MOCHA["muted"]))
+    p.setColor(QPalette.ColorRole.Window, QColor(theme["background"]))
+    p.setColor(QPalette.ColorRole.Base, QColor(theme["header"]))
+    p.setColor(QPalette.ColorRole.WindowText, QColor(theme["text"]))
+    p.setColor(QPalette.ColorRole.Text, QColor(theme["text"]))
+    p.setColor(QPalette.ColorRole.Button, QColor(theme["header"]))
+    p.setColor(QPalette.ColorRole.ButtonText, QColor(theme["text"]))
+    p.setColor(QPalette.ColorRole.Highlight, QColor(theme["accent"]))
+    p.setColor(QPalette.ColorRole.HighlightedText, QColor(theme["background"]))
+    p.setColor(QPalette.ColorRole.PlaceholderText, QColor(theme["muted"]))
     return p

@@ -3,11 +3,14 @@ import sys
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QMainWindow, QWidget
 
 from resources.palette import build_qpalette
+from resources.theme_manager import theme_manager
 from ui.content_area import ContentArea
 from ui.sidebar import Sidebar
 
 app: QApplication = QApplication(sys.argv)
-app.setPalette(build_qpalette())
+
+app.setPalette(build_qpalette(theme_manager.current_theme))
+theme_manager.theme_changed.connect(lambda theme: app.setPalette(build_qpalette(theme)))
 
 window: QMainWindow = QMainWindow()
 

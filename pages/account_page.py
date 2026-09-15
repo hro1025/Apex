@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -10,7 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from resources.palette import CATPPUCCIN_MOCHA
+from resources.theme_manager import theme_manager
 from services.account_service import create_account, get_all_accounts
 from ui.add_account_dialog import AddAccountDialog
 
@@ -19,79 +20,101 @@ class AccountPage(QWidget):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
-        title: QLabel = QLabel("Account")
-        title.setStyleSheet(
-            f"color: {CATPPUCCIN_MOCHA['text']}; font-size: 24px; font-weight: bold;"
+        self.title: QLabel = QLabel("Accounts")
+
+        self.add_account_button: QPushButton = QPushButton("Add account")
+        self.add_account_button.setObjectName("add_account_button")
+        self.add_account_button.clicked.connect(self.open_add_account_dialog)
+
+        header_row: QHBoxLayout = QHBoxLayout()
+        header_row.addWidget(self.title)
+        header_row.addStretch()
+        header_row.addWidget(self.add_account_button)
+
+        self.separator: QWidget = QWidget()
+        self.separator.setFixedHeight(2)
+        self.separator.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+
+        self.accounts_table: QTableWidget = QTableWidget()
+        self.accounts_table.setColumnCount(3)
+        self.accounts_table.setHorizontalHeaderLabels(["Name", "Category", "Balance"])
+        self.accounts_table.horizontalHeader().setDefaultAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
+        self.accounts_table.setFrameShape(QFrame.Shape.NoFrame)
+        self.accounts_table.setShowGrid(False)
+        self.accounts_table.verticalHeader().setDefaultSectionSize(36)
+        self.accounts_table.setSelectionBehavior(
+            QTableWidget.SelectionBehavior.SelectRows
         )
 
-        name_label: QLabel = QLabel("Name")
-        category_label: QLabel = QLabel("Category")
-        balance_label: QLabel = QLabel("Balance")
-        for label in (name_label, category_label, balance_label):
-            label.setStyleSheet(
-                f"color: {CATPPUCCIN_MOCHA['text']}; font-size: 14px; font-weight: bold;"
-            )
-
-        add_account_button: QPushButton = QPushButton("Add account")
-        add_account_button.setObjectName("add_account_button")
-        add_account_button.clicked.connect(self.open_add_account_dialog)
-
-        columns_row: QHBoxLayout = QHBoxLayout()
-        columns_row.addWidget(name_label, 1)
-        columns_row.addWidget(category_label, 1)
-        columns_row.addWidget(balance_label, 1)
-        columns_row.addStretch()
-        columns_row.addWidget(add_account_button)
-
-        separator: QFrame = QFrame()
-        separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setFrameShadow(QFrame.Shadow.Plain)
-        separator.setStyleSheet(
-            f"background-color: {CATPPUCCIN_MOCHA['border']}; max-height: 2px;"
-        )
-
-        accounts_table: QTableWidget = QTableWidget()
-        accounts_table.setColumnCount(3)
-        accounts_table.setFrameShape(QFrame.Shape.NoFrame)
-        accounts_table.horizontalHeader().setVisible(False)
-        accounts_table.verticalHeader().setVisible(False)
-        accounts_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        accounts_table.horizontalHeader().setSectionResizeMode(
+        self.accounts_table.verticalHeader().setVisible(False)
+        self.accounts_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.accounts_table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch
         )
-
-        accounts = get_all_accounts()
-        accounts_table.setRowCount(len(accounts))
-        for row, account in enumerate(accounts):
-            accounts_table.setItem(row, 0, QTableWidgetItem(account.name))
-            accounts_table.setItem(row, 1, QTableWidgetItem(account.category))
-            accounts_table.setItem(row, 2, QTableWidgetItem(f"{account.balance:.2f}"))
 
         layout: QVBoxLayout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(10)
-        layout.addWidget(title)
-        layout.addLayout(columns_row)
-        layout.addWidget(separator)
-        layout.addWidget(accounts_table)
+        layout.addLayout(header_row)
+        layout.addWidget(self.separator)
+        layout.addWidget(self.accounts_table)
+
+        theme_manager.theme_changed.connect(self.apply_theme)
+        self.apply_theme(theme_manager.current_theme)
+
+        self.refresh_accounts()
+
+    def apply_theme(self, theme: dict[str, str]) -> None:
+        self.title.setStyleSheet(
+            f"color: {theme['text']}; font-size: 24px; font-weight: bold;"
+        )
+        self.separator.setStyleSheet(f"background-color: {theme['border']};")
+
+        self.accounts_table.setStyleSheet(
+            f"""
+            QHeaderView::section {{
+                background-color: transparent;
+                color: {theme["text"]};
+                font-size: 14px;
+                font-weight: bold;
+                border: none;
+                padding: 4px;
+            }}
+            """
+        )
 
         self.setStyleSheet(f"""
-            #add_account_button {{
-                color: {CATPPUCCIN_MOCHA["accent"]};
-                background-color: {CATPPUCCIN_MOCHA["header_hover"]};
-                border: none;
-                border-radius: 10px;
-                text-align: left;
-                padding: 8px 12px;
-                font-size: 14px;
-            }}
-            #add_account_button:hover {{
-                background-color: {CATPPUCCIN_MOCHA["header_active"]};
-            }}
-            #add_account_button:pressed {{
-                background-color: {CATPPUCCIN_MOCHA["border_light"]};
-            }}
-        """)
+    QWidget {{
+        background-color: transparent;
+    }}
+    #add_account_button {{
+        color: {theme["accent"]};
+        background-color: {theme["header_hover"]};
+        border: none;
+        border-radius: 10px;
+        text-align: left;
+        padding: 8px 12px;
+        font-size: 14px;
+    }}
+    #add_account_button:hover {{
+        background-color: {theme["header_active"]};
+    }}
+    #add_account_button:pressed {{
+        background-color: {theme["border_light"]};
+    }}
+""")
+
+    def refresh_accounts(self) -> None:
+        accounts = get_all_accounts()
+        self.accounts_table.setRowCount(len(accounts))
+        for row, account in enumerate(accounts):
+            self.accounts_table.setItem(row, 0, QTableWidgetItem(account.name))
+            self.accounts_table.setItem(row, 1, QTableWidgetItem(account.category))
+            self.accounts_table.setItem(
+                row, 2, QTableWidgetItem(f"{account.balance:.2f}")
+            )
 
     def open_add_account_dialog(self) -> None:
         dialog = AddAccountDialog(self)
@@ -101,3 +124,4 @@ class AccountPage(QWidget):
                 category=dialog.category_input.text(),
                 balance=float(dialog.balance_input.text() or 0),
             )
+            self.refresh_accounts()

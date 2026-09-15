@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QWidget
 
-from resources.palette import CATPPUCCIN_MOCHA
+from resources.theme_manager import theme_manager
 
 
 class Sidebar(QWidget):
@@ -38,15 +38,19 @@ class Sidebar(QWidget):
 
         layout.addWidget(settings_button)
 
+        theme_manager.theme_changed.connect(self.apply_theme)
+        self.apply_theme(theme_manager.current_theme)
+
+    def apply_theme(self, theme: dict[str, str]) -> None:
         self.setStyleSheet(f"""
             #Sidebar {{
-                background-color: {CATPPUCCIN_MOCHA["header"]};
-                border: 2px solid {CATPPUCCIN_MOCHA["border"]};
+                background-color: {theme["header"]};
+                border: 2px solid {theme["border"]};
                 border-radius: 10px;
             }}
             QPushButton {{
-                color: {CATPPUCCIN_MOCHA["accent"]};
-                background-color: {CATPPUCCIN_MOCHA["header_hover"]};
+                color: {theme["accent"]};
+                background-color: {theme["header_hover"]};
                 border: none;
                 border-radius: 10px;
                 text-align: left;
@@ -54,9 +58,9 @@ class Sidebar(QWidget):
                 font-size: 14px;
             }}
             QPushButton:hover {{
-                background-color: {CATPPUCCIN_MOCHA["header_active"]};
+                background-color: {theme["header_active"]};
             }}
             QPushButton:pressed {{
-                background-color: {CATPPUCCIN_MOCHA["border_light"]};
+                background-color: {theme["border_light"]};
             }}
         """)

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from resources.palette import CATPPUCCIN_MOCHA
+from resources.theme_manager import theme_manager
 
 
 class AddAccountDialog(QDialog):
@@ -20,8 +20,7 @@ class AddAccountDialog(QDialog):
         self.setObjectName("AddAccountDialog")
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
-        label: QLabel = QLabel("Enter account information")
-        label.setStyleSheet(f"color: {CATPPUCCIN_MOCHA['text']}; font-size: 16px;")
+        self.label: QLabel = QLabel("Enter account information")
 
         self.name_input: QLineEdit = QLineEdit()
         self.name_input.setPlaceholderText("Name")
@@ -32,52 +31,22 @@ class AddAccountDialog(QDialog):
         self.balance_input: QLineEdit = QLineEdit()
         self.balance_input.setPlaceholderText("0.00")
 
-        for input_field in (self.name_input, self.category_input, self.balance_input):
-            input_field.setStyleSheet(
-                f"""
-                color: {CATPPUCCIN_MOCHA["text"]};
-                border: 1px solid {CATPPUCCIN_MOCHA["border"]};
-                border-radius: 6px;
-                padding: 6px;
-                """
-            )
-
         fields_column: QVBoxLayout = QVBoxLayout()
         fields_column.setSpacing(10)
-        fields_column.addWidget(label)
+        fields_column.addWidget(self.label)
         fields_column.addWidget(self.name_input)
         fields_column.addWidget(self.category_input)
         fields_column.addWidget(self.balance_input)
 
-        import_button: QPushButton = QPushButton("Import")
-        import_button.setStyleSheet(
-            f"""
-            color: {CATPPUCCIN_MOCHA["accent"]};
-            background-color: {CATPPUCCIN_MOCHA["header_hover"]};
-            border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 14px;
-            """
-        )
+        self.import_button: QPushButton = QPushButton("Import")
 
-        add_button: QPushButton = QPushButton("Add")
-        add_button.setStyleSheet(
-            f"""
-            color: {CATPPUCCIN_MOCHA["accent"]};
-            background-color: {CATPPUCCIN_MOCHA["header_hover"]};
-            border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-size: 14px;
-            """
-        )
-        add_button.clicked.connect(self.accept)
+        self.add_button: QPushButton = QPushButton("Add")
+        self.add_button.clicked.connect(self.accept)
 
         button_row: QHBoxLayout = QHBoxLayout()
-        button_row.addWidget(import_button)
+        button_row.addWidget(self.import_button)
         button_row.addStretch()
-        button_row.addWidget(add_button)
+        button_row.addWidget(self.add_button)
 
         layout: QVBoxLayout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
@@ -85,9 +54,37 @@ class AddAccountDialog(QDialog):
         layout.addStretch()
         layout.addLayout(button_row)
 
+        theme_manager.theme_changed.connect(self.apply_theme)
+        self.apply_theme(theme_manager.current_theme)
+
+    def apply_theme(self, theme: dict[str, str]) -> None:
+        self.label.setStyleSheet(f"color: {theme['text']}; font-size: 16px;")
+
+        for input_field in (self.name_input, self.category_input, self.balance_input):
+            input_field.setStyleSheet(
+                f"""
+                color: {theme["text"]};
+                border: 1px solid {theme["border"]};
+                border-radius: 6px;
+                padding: 6px;
+                """
+            )
+
+        for button in (self.import_button, self.add_button):
+            button.setStyleSheet(
+                f"""
+                color: {theme["accent"]};
+                background-color: {theme["header_hover"]};
+                border: none;
+                border-radius: 8px;
+                padding: 8px 16px;
+                font-size: 14px;
+                """
+            )
+
         self.setStyleSheet(f"""
             #AddAccountDialog {{
-                background-color: {CATPPUCCIN_MOCHA["header"]};
-                border: 2px solid {CATPPUCCIN_MOCHA["border"]};
+                background-color: {theme["header"]};
+                border: 2px solid {theme["border"]};
             }}
         """)
